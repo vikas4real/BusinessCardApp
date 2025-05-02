@@ -1,4 +1,4 @@
-package com.businesscardapp
+package com.pixelveda.businesscard
 
 import android.app.Application
 import com.facebook.react.PackageList

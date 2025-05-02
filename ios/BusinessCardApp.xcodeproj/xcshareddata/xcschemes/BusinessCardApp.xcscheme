@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "BusinessCardApp.app"
-               BlueprintName = "BusinessCardApp"
-               ReferencedContainer = "container:BusinessCardApp.xcodeproj">
+               BuildableName = "Business Card App.app"
+               BlueprintName = "Business Card App"
+               ReferencedContainer = "container:Business Card App.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "BusinessCardAppTests.xctest"
-               BlueprintName = "BusinessCardAppTests"
-               ReferencedContainer = "container:BusinessCardApp.xcodeproj">
+               BuildableName = "Business Card AppTests.xctest"
+               BlueprintName = "Business Card AppTests"
+               ReferencedContainer = "container:Business Card App.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "BusinessCardApp.app"
-            BlueprintName = "BusinessCardApp"
-            ReferencedContainer = "container:BusinessCardApp.xcodeproj">
+            BuildableName = "Business Card App.app"
+            BlueprintName = "Business Card App"
+            ReferencedContainer = "container:Business Card App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "BusinessCardApp.app"
-            BlueprintName = "BusinessCardApp"
-            ReferencedContainer = "container:BusinessCardApp.xcodeproj">
+            BuildableName = "Business Card App.app"
+            BlueprintName = "Business Card App"
+            ReferencedContainer = "container:Business Card App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

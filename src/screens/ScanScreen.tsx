@@ -6,20 +6,54 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import nfcManager, {Ndef, NfcTech} from 'react-native-nfc-manager';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
+import {RNCamera} from 'react-native-camera';
+import QRCodeScanner from 'react-native-qrcode-scanner';
 const ScanScreen = () => {
   const [scanning, setScanning] = useState(false);
+  const [nfcSupported, setNfcSupported] = useState(false);
+  const [showQrScanner, setShowQrScanner] = useState(false);
+  useEffect(() => {
+    const checkNfc = async () => {
+      try {
+        // Check if NFC is supported
+        const isSupported = await nfcManager.isSupported();
+        setNfcSupported(isSupported);
+
+        if (isSupported) {
+          await nfcManager.start();
+        }
+      } catch (error) {
+        console.error('Error initializing NFC:', error);
+      }
+    };
+
+    checkNfc();
+
+    // Clean up NFC manager when component unmounts
+    return () => {
+      const cleanUp = async () => {
+        if (scanning) {
+          try {
+            await nfcManager.cancelTechnologyRequest();
+          } catch (error) {
+            console.error('Error cleaning up NFC:', error);
+          }
+        }
+        nfcManager.unregisterTagEvent();
+      };
+
+      cleanUp();
+    };
+  }, [scanning]);
 
   const startNfcScan = async () => {
     try {
       setScanning(true);
 
-      // Check if NFC is supported
-      const isSupported = await nfcManager.isSupported();
-      if (!isSupported) {
+      if (!nfcSupported) {
         Alert.alert('Error', 'NFC is not supported on this device');
         setScanning(false);
         return;
@@ -48,25 +82,55 @@ const ScanScreen = () => {
       }
     } catch (error) {
       console.error('Error scanning NFC:', error);
-      if (
-        error instanceof Error &&
-        error.message !== 'User cancelled NFC session'
-      ) {
-        Alert.alert('Error', 'Failed to scan NFC tag');
+
+      // Handle specific NFC errors with better user messaging
+      if (error instanceof Error) {
+        if (error.message === 'User cancelled NFC session') {
+          // User cancelled, no need to show an error
+          console.log('NFC scan was cancelled by user');
+        } else if (error.message.includes('NFC hardware')) {
+          Alert.alert(
+            'NFC Error',
+            'Please ensure NFC is enabled in your device settings',
+          );
+        } else if (error.message.includes('timeout')) {
+          Alert.alert('Timeout', 'NFC scan timed out. Please try again.');
+        } else {
+          Alert.alert('Error', 'Failed to scan NFC tag: ' + error.message);
+        }
       }
     } finally {
       // Cancel any pending NFC operations
-      nfcManager.cancelTechnologyRequest();
+      try {
+        await nfcManager.cancelTechnologyRequest();
+      } catch (error) {
+        console.error('Error cancelling NFC technology request:', error);
+      }
       setScanning(false);
     }
   };
 
   const scanQrCode = () => {
-    // In a real app, you would use a QR code scanner library
-    Alert.alert(
-      'Feature Note',
-      'QR code scanning would be implemented using react-native-camera or similar in a complete app.',
-    );
+    setShowQrScanner(true);
+  };
+  const onQrCodeScanned = async (event: any) => {
+    try {
+      const {data} = event;
+      console.log('QR code scanned:', data);
+
+      setShowQrScanner(false);
+
+      // If it's a URL, open it
+      if (data.startsWith('http')) {
+        await Linking.openURL(data);
+      } else {
+        // Assuming the QR contains contact info
+        Alert.alert('Contact Info Received', data);
+      }
+    } catch (error) {
+      console.error('Error processing QR code:', error);
+      Alert.alert('Error', 'Failed to process QR code');
+    }
   };
 
   return (
@@ -91,11 +155,40 @@ const ScanScreen = () => {
           </TouchableOpacity>
         </View>
 
+        {!nfcSupported && (
+          <View style={styles.warningContainer}>
+            <Icon name="alert-circle" size={24} color="#f44336" />
+            <Text style={styles.warningText}>
+              NFC is not supported on this device
+            </Text>
+          </View>
+        )}
+
         <Text style={styles.scanInstructions}>
           Hold your phone near an NFC business card or scan a QR code to add a
           new contact
         </Text>
       </View>
+      {showQrScanner && (
+        <View style={styles.qrScannerContainer}>
+          <QRCodeScanner
+            onRead={onQrCodeScanned}
+            flashMode={RNCamera.Constants.FlashMode.auto}
+            topContent={
+              <Text style={styles.qrScannerText}>
+                Scan a QR code business card
+              </Text>
+            }
+            bottomContent={
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowQrScanner(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            }
+          />
+        </View>
+      )}
     </View>
   );
 };
@@ -151,5 +244,44 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 16,
   },
+  warningContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffebee',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  warningText: {
+    color: '#d32f2f',
+    marginLeft: 8,
+    fontSize: 14,
+  },
+  qrScannerContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'black',
+    zIndex: 1000,
+  },
+  qrScannerText: {
+    color: 'white',
+    fontSize: 16,
+    marginBottom: 15,
+  },
+  cancelButton: {
+    backgroundColor: '#f44336',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 15,
+  },
+  cancelButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
+
 export default ScanScreen;
